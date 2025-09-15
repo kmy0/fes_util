@@ -1,22 +1,15 @@
 #include "reframework/API.hpp"
 #include <sol/sol.hpp>
-#include <windows.h>
 
 using API = reframework::API;
-HANDLE g_handle = GetCurrentProcess();
 lua_State *g_lua{nullptr};
 
-template <typename T> T read_memory(uintptr_t ptr) {
-    T value;
-    SIZE_T bytes_read;
-    ReadProcessMemory(g_handle, (LPCVOID)ptr, &value, sizeof(T), &bytes_read);
-    return value;
+template <typename T> T &read_memory(uintptr_t ptr) {
+    return *reinterpret_cast<T *>(ptr);
 }
 
-template <typename T> bool write_memory(uintptr_t ptr, T value) {
-    SIZE_T bytes_written;
-    return WriteProcessMemory(g_handle, (LPVOID)ptr, &value, sizeof(T),
-                              &bytes_written);
+template <typename T> void write_memory(uintptr_t ptr, const T &value) {
+    *reinterpret_cast<T *>(ptr) = value;
 }
 
 void on_lua_state_created(lua_State *l) {
